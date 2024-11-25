@@ -1,7 +1,6 @@
-import Database from 'better-sqlite3'
+import db from './initializeDB.js'
 import express from 'express'
 
-const db = new Database('./system.db')
 const app = express()
 
 app.get('/', (req, res) => {
