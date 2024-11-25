@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3'
 
 function initializeDatabase() {
-    const db = new Database('./system.db')
+    const db = new Database('./src/database/system.db')
 
     db.prepare(`
         CREATE TABLE IF NOT EXISTS tarefas (
