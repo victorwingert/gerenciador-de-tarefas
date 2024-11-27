@@ -62,3 +62,16 @@ export const deleteTarefa = (req, res) => {
 
     res.status(200).json({ message: "Tarefa deletada e lista reordenada com sucesso!" })
 }
+
+export const updateOrdemTarefa = (req, res) => {
+    const query = db.prepare(`
+        UPDATE tarefas
+        SET ordem = ?
+        WHERE
+            id = ?
+    `)
+
+    query.run(req.body.ordem, req.params.id)
+
+    res.status(201).json(req.body)
+}
