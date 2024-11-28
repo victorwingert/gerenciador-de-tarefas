@@ -1,6 +1,15 @@
 import db from './database/initializeDB.js'
 
 export const createTarefa = (req, res) => {
+    const { nome, custo, data } = req.body
+
+    const checkQuery = db.prepare('SELECT COUNT(*) AS count FROM tarefas WHERE nome = ?');
+    const checkResult = checkQuery.get(nome);
+
+    if (checkResult.count > 0) {
+        return res.status(409).json({ message: 'Já existe uma tarefa com esse nome.' });
+    }
+
     const maxOrderQuery = db.prepare('SELECT MAX(ordem) AS max_ordem FROM tarefas')
     const result = maxOrderQuery.get()
     const ordem = result.max_ordem ? result.max_ordem + 1 : 1
@@ -22,6 +31,15 @@ export const getTarefas = (req, res) => {
 }
 
 export const updateTarefa = (req, res) => {
+    const { nome, custo, data } = req.body
+
+    const checkQuery = db.prepare('SELECT COUNT(*) AS count FROM tarefas WHERE nome = ?');
+    const checkResult = checkQuery.get(nome);
+
+    if (checkResult.count > 0) {
+        return res.status(409).json({ message: 'Já existe uma tarefa com esse nome.' });
+    }
+
     const query = db.prepare(`
         UPDATE tarefas
         SET nome = ?,
