@@ -2,9 +2,6 @@
   "name": "app-node",
   "version": "1.0.0",
   "main": "index.js",
-  "engine": {
-    "node": "18"
-  },
   "scripts": {
     "dev": "tsx --watch src/server.ts",
     "start": "node dist/server.js",
