@@ -37,6 +37,8 @@ export function App() {
   const handleMoveUp = async (tarefa) => {
     const tarefaAnterior = tarefas.find((t) => t.ordem === tarefa.ordem - 1);
 
+    if (!tarefaAnterior) return;
+
     await api.patch(`/tarefas/${tarefa.id}`, { ordem: -1 });
     await api.patch(`/tarefas/${tarefaAnterior.id}`, { ordem: -2 });
 
@@ -52,6 +54,8 @@ export function App() {
 
   const handleMoveDown = async (tarefa) => {
     const tarefaSeguinte = tarefas.find((t) => t.ordem === tarefa.ordem + 1);
+
+    if (!tarefaSeguinte) return;
 
     await api.patch(`/tarefas/${tarefa.id}`, { ordem: -1 });
     await api.patch(`/tarefas/${tarefaSeguinte.id}`, { ordem: -2 });
