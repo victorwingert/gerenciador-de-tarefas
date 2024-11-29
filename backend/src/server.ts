@@ -1,7 +1,7 @@
 import fastify from "fastify";
 import cors from '@fastify/cors';
 
-import { supabase } from "./supaBaseConnection";
+import { supabase } from "./supabaseConnection";
 
 const app = fastify();
 
@@ -53,7 +53,10 @@ type id = {
 app.get("/tarefas", async () => {
 
     try {
-        const { data: tarefas } = await supabase.from("tarefas").select("*");
+        const { data: tarefas } = await supabase
+            .from("tarefas")
+            .select("*")
+            .order("ordem", { ascending: true });
 
         return { "value": tarefas };
     } catch (error) {
@@ -226,6 +229,8 @@ app.patch('/tarefas/:id', async (req, res) => {
             console.error(error);
             return res.status(500).send({ message: 'Erro ao atualizar ordem da tarefa', error });
         }
+
+        await reordenarTarefas();
 
         return res.status(200).send({ message: 'Ordem da tarefa atualizada com sucesso!', data });
     } catch (error) {
