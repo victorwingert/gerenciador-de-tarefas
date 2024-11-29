@@ -73,7 +73,7 @@ export function App() {
   async function getTarefas() {
     const tarefasFromApi = await api.get('/tarefas')
 
-    setTarefas(tarefasFromApi.data)
+    setTarefas(tarefasFromApi.data.value)
   }
 
   async function deleteTarefas(id) {
