@@ -32,26 +32,50 @@ export const getTarefas = (req, res) => {
 
 export const updateTarefa = (req, res) => {
     const { nome, custo, data } = req.body
+    const tarefaId = req.params.id
 
-    const checkQuery = db.prepare('SELECT COUNT(*) AS count FROM tarefas WHERE nome = ?');
-    const checkResult = checkQuery.get(nome);
+    const tarefaAtualQuery = db.prepare('SELECT nome FROM tarefas WHERE id = ?')
+    const tarefaAtual = tarefaAtualQuery.get(tarefaId)
 
-    if (checkResult.count > 0) {
-        return res.status(409).json({ message: 'Já existe uma tarefa com esse nome.' });
+    let updateFields = []
+    let params = []
+
+    if (tarefaAtual.nome !== nome) {
+        const checkQuery = db.prepare('SELECT COUNT(*) AS count FROM tarefas WHERE nome = ?');
+        const checkResult = checkQuery.get(nome);
+    
+        if (checkResult.count > 0) {
+            return res.status(409).json({ message: 'Já existe uma tarefa com esse nome.' });
+        }
+        updateFields.push('nome = ?');
+        params.push(nome);
     }
 
-    const query = db.prepare(`
+    if (tarefaAtual.custo !== custo) {
+        updateFields.push('custo = ?');
+        params.push(custo);
+    }
+
+    if (tarefaAtual.data !== data) {
+        updateFields.push('data = ?');
+        params.push(data);
+    }
+
+    if (updateFields.length === 0) {
+        return res.status(400).json({ message: "Nenhuma alteração detectada." });
+    }
+
+    const sql = `
         UPDATE tarefas
-        SET nome = ?,
-            custo = ?,
-            data = ?
-        WHERE
-            id = ?
-    `)
+        SET ${updateFields.join(', ')}
+        WHERE id = ?
+    `;
 
-    query.run(req.body.nome, req.body.custo, req.body.data, req.params.id)
+    params.push(tarefaId);
 
-    res.status(201).json(req.body)
+    const updateQuery = db.prepare(sql);
+    updateQuery.run(...params);
+    res.status(200).json({ message: "Tarefa atualizada com sucesso!" });
 }
 
 export const deleteTarefa = (req, res) => {
