@@ -85,6 +85,7 @@ export const deleteTarefa = (req, res) => {
         SELECT ordem FROM tarefas WHERE id = ?
     `);
     const ordemTarefaDeletada = ordemQuery.get(tarefaId)
+    console.log(ordemTarefaDeletada)
 
     if (!ordemTarefaDeletada) {
         return res.status(404).json({ message: "Tarefa não encontrada!" })
@@ -95,14 +96,9 @@ export const deleteTarefa = (req, res) => {
     `);
     delQuery.run(tarefaId);
 
-    const updateQuery = db.prepare(`
-        UPDATE tarefas
-        SET ordem = ordem - 1
-        WHERE ordem > ?
-    `);
-    updateQuery.run(ordemTarefaDeletada.ordem)
+    reordenarTarefas()
 
-    res.status(200).json({ message: "Tarefa deletada e lista reordenada com sucesso!" })
+    res.status(200).json({ message: "Tarefa deletada com sucesso!" })
 }
 
 export const updateOrdemTarefa = (req, res) => {
@@ -116,4 +112,19 @@ export const updateOrdemTarefa = (req, res) => {
     query.run(req.body.ordem, req.params.id)
 
     res.status(201).json(req.body)
+}
+
+export const reordenarTarefas = () => {
+    const tarefasQuery = db.prepare(`
+        SELECT * FROM tarefas ORDER BY ordem ASC
+    `);
+
+    const tarefas = tarefasQuery.all();
+
+    tarefas.forEach((tarefa, index) => {
+        const updateQuery = db.prepare(`
+            UPDATE tarefas SET ordem = ? WHERE id = ?
+        `);
+        updateQuery.run(index + 1, tarefa.id);
+    });
 }
