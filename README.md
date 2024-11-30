@@ -39,10 +39,6 @@ Este é um sistema web desenvolvido como parte de um processo seletivo da Fatto.
 
 ## Instalação e Execução  
 
-### Requisitos  
-- [Ferramentas ou linguagens necessárias].  
-- [Passos para configurar o banco de dados].  
-
 ## Demonstração  
 - Acesse a aplicação publicada: https://victorwingert.github.io/lista-de-tarefas/ 
 - Repositório no GitHub: https://github.com/victorwingert/gerenciador-de-tarefas 
