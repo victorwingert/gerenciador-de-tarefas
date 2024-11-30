@@ -37,8 +37,6 @@ Este é um sistema web desenvolvido como parte de um processo seletivo da Fatto.
 - **Banco de Dados**: PostgreSQL
 - **Hospedagem**: Render, Supabase 
 
-## Instalação e Execução  
-
 ## Demonstração  
 - Acesse a aplicação publicada: https://victorwingert.github.io/lista-de-tarefas/ 
 - Repositório no GitHub: https://github.com/victorwingert/gerenciador-de-tarefas 
