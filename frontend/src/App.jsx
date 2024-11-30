@@ -18,6 +18,7 @@ export function App() {
   const [openDelete, setOpenDelete] = useState(false);
   const [tarefas, setTarefas] = useState([]);
   const [tarefaAtual, setTarefaAtual] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleCloseDialog = () => {
     setOpenAdd(false)
@@ -65,9 +66,15 @@ export function App() {
   };
 
   async function getTarefas() {
-    const tarefasFromApi = await api.get('/tarefas')
-
-    setTarefas(tarefasFromApi.data.value)
+    setIsLoading(true);
+    try {
+      const tarefasFromApi = await api.get('/tarefas');
+      setTarefas(tarefasFromApi.data.value);
+    } catch (error) {
+      console.error("Erro ao carregar as tarefas:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function deleteTarefas(id) {
@@ -107,8 +114,8 @@ export function App() {
 
     //await api.patch(`/tarefas/${draggedTaskId}`, { ordem:  ordemReal});
 
-    tarefas.forEach(async(tarefa, index) => {
-      await api.patch(`/tarefas/${tarefa.id}`, { ordem:  index+1});
+    tarefas.forEach(async (tarefa, index) => {
+      await api.patch(`/tarefas/${tarefa.id}`, { ordem: index + 1 });
     })
   };
 
@@ -117,73 +124,79 @@ export function App() {
       <h1 className="text-3xl font-bold">Tarefas</h1>
 
       <div className="border-2 border-viridian rounded-lg p-2">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-center text-white bg-viridian">ID</TableHead>
-              <TableHead className="text-center font-bold text-white bg-viridian">Nome</TableHead>
-              <TableHead className="text-center font-bold text-white bg-viridian">Custo</TableHead>
-              <TableHead className="text-center font-bold text-white bg-viridian">Data Limite</TableHead>
-              <TableHead className="text-center font-bold text-white bg-viridian">Ordem</TableHead>
-              <TableHead className="text-center w-10 text-white bg-viridian"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="tasks" type="list" direction="vertical">
-              {(provided) => (
-                <TableBody ref={provided.innerRef} {...provided.droppableProps}>
-                  <div className="p-2" />
-                  {tarefas
-                    .sort((a, b) => a.ordem - b.ordem)
-                    .map((tarefa) => (
-                      <React.Fragment key={tarefa.id}>
-                        <Draggable draggableId={tarefa.id.toString()} index={tarefa.ordem}>
-                          {(provided) => (
-                            <TableRow
-                              className={`shadow border-viridian text-center ${tarefa.custo >= 1000 ? 'bg-cambridge-blue hover:bg-cambridge-blue/80' : 'bg-azure-web hover:bg-azure-web/80'}`}
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                            >
-                              <TableCell className={`text-center font-bold`}>{tarefa.id}</TableCell>
-                              <TableCell className="text-center">{tarefa.nome}</TableCell>
-                              <TableCell className="text-center">{tarefa.custo}</TableCell>
-                              <TableCell className="text-center">{tarefa.data}</TableCell>
-                              <TableCell className="text-center">{tarefa.ordem}</TableCell>
-                              <TableCell className={``}>
-                                <div className="flex justify-center items-center gap-3">
-                                  <div className="flex justify-center items-center gap-1">
-                                    <Button className="h-8 w-8 rounded-full bg-redwood hover:bg-redwood hover:bg-opacity-80" onClick={() => { handleMoveUp(tarefa) }} disabled={tarefa.ordem === 1}>
-                                      <ArrowUpIcon />
-                                    </Button>
-                                    <Button className="h-8 w-8 rounded-full bg-redwood hover:bg-redwood hover:bg-opacity-80" onClick={() => { handleMoveDown(tarefa) }} disabled={tarefa.ordem === tarefas.length}>
-                                      <ArrowDown />
-                                    </Button>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-48">
+            <span className="text-lg font-medium text-gray-500">Carregando...</span>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center text-white bg-viridian">ID</TableHead>
+                <TableHead className="text-center font-bold text-white bg-viridian">Nome</TableHead>
+                <TableHead className="text-center font-bold text-white bg-viridian">Custo</TableHead>
+                <TableHead className="text-center font-bold text-white bg-viridian">Data Limite</TableHead>
+                <TableHead className="text-center font-bold text-white bg-viridian">Ordem</TableHead>
+                <TableHead className="text-center w-10 text-white bg-viridian"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="tasks" type="list" direction="vertical">
+                {(provided) => (
+                  <TableBody ref={provided.innerRef} {...provided.droppableProps}>
+                    <div className="p-2" />
+                    {tarefas
+                      .sort((a, b) => a.ordem - b.ordem)
+                      .map((tarefa) => (
+                        <React.Fragment key={tarefa.id}>
+                          <Draggable draggableId={tarefa.id.toString()} index={tarefa.ordem}>
+                            {(provided) => (
+                              <TableRow
+                                className={`shadow border-viridian text-center ${tarefa.custo >= 1000 ? 'bg-cambridge-blue hover:bg-cambridge-blue/80' : 'bg-azure-web hover:bg-azure-web/80'}`}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                <TableCell className={`text-center font-bold`}>{tarefa.id}</TableCell>
+                                <TableCell className="text-center">{tarefa.nome}</TableCell>
+                                <TableCell className="text-center">{tarefa.custo}</TableCell>
+                                <TableCell className="text-center">{tarefa.data}</TableCell>
+                                <TableCell className="text-center">{tarefa.ordem}</TableCell>
+                                <TableCell className={``}>
+                                  <div className="flex justify-center items-center gap-3">
+                                    <div className="flex justify-center items-center gap-1">
+                                      <Button className="h-8 w-8 rounded-full bg-redwood hover:bg-redwood hover:bg-opacity-80" onClick={() => { handleMoveUp(tarefa) }} disabled={tarefa.ordem === 1}>
+                                        <ArrowUpIcon />
+                                      </Button>
+                                      <Button className="h-8 w-8 rounded-full bg-redwood hover:bg-redwood hover:bg-opacity-80" onClick={() => { handleMoveDown(tarefa) }} disabled={tarefa.ordem === tarefas.length}>
+                                        <ArrowDown />
+                                      </Button>
+                                    </div>
+                                    <div className="flex justify-center items-center gap-1">
+                                      <Button className="h-8 w-8 rounded-full bg-blue-gray hover:bg-blue-gray hover:bg-opacity-80" onClick={() => { setOpenEdt(true), handleEditClick(tarefa) }}>
+                                        <Edit2Icon />
+                                      </Button>
+                                      <Button className="h-8 w-8 rounded-full bg-vermilion hover:bg-vermilion hover:bg-opacity-80" onClick={() => { setOpenDelete(true), handleEditClickDelete(tarefa) }}>
+                                        <TrashIcon />
+                                      </Button>
+                                    </div>
                                   </div>
-                                  <div className="flex justify-center items-center gap-1">
-                                    <Button className="h-8 w-8 rounded-full bg-blue-gray hover:bg-blue-gray hover:bg-opacity-80" onClick={() => { setOpenEdt(true), handleEditClick(tarefa) }}>
-                                      <Edit2Icon />
-                                    </Button>
-                                    <Button className="h-8 w-8 rounded-full bg-vermilion hover:bg-vermilion hover:bg-opacity-80" onClick={() => { setOpenDelete(true), handleEditClickDelete(tarefa) }}>
-                                      <TrashIcon />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </Draggable>
-                        <div className={`${tarefa.ordem === tarefas.length ? '' : 'p-2'}`} />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </Draggable>
+                          <div className={`${tarefa.ordem === tarefas.length ? '' : 'p-2'}`} />
 
-                      </React.Fragment>
-                    ))}
+                        </React.Fragment>
+                      ))}
 
-                  {provided.placeholder}
-                </TableBody>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </Table>
+                    {provided.placeholder}
+                  </TableBody>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </Table>
+        )}
       </div>
 
       <Dialog open={openEdt} onOpenChange={setOpenEdt}>

@@ -22,6 +22,7 @@ const formSchema = z.object({
 export function AddForm({ onSave, onAddTarefa }) {
     const [date, setDate] = useState();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -33,6 +34,8 @@ export function AddForm({ onSave, onAddTarefa }) {
     })
 
     async function onSubmit(values) {
+        setIsAdding(true);
+
         try {
             await onAddTarefa(values.name, values.price, values.date)
             onSave()
@@ -44,6 +47,8 @@ export function AddForm({ onSave, onAddTarefa }) {
             } else {
                 console.error('Erro ao enviar os dados:', error);
             }
+        } finally {
+            setIsAdding(false);
         }
     }
 
@@ -115,7 +120,7 @@ export function AddForm({ onSave, onAddTarefa }) {
                     )}
                 />
                 <div className="flex gap-1">
-                    <Button type="submit" className="w-[65px] box-border px-4 py-2">Incluir</Button>
+                    <Button type="submit" className="w-[65px] box-border px-4 py-2" disabled={isAdding}>{isAdding ? "Salvando" : "Incluir"}</Button>
                     <Button type="button" variant="outline" onClick={onSave} className="w-[65px] box-border px-4 py-2">Cancelar</Button>
                 </div>
             </form>

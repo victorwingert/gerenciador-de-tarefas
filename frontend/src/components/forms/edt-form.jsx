@@ -23,6 +23,7 @@ const formSchema = z.object({
 export function EdtForm({ tarefa, onEdit, onEditTarefa }) {
     const [date, setDate] = useState();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -34,9 +35,11 @@ export function EdtForm({ tarefa, onEdit, onEditTarefa }) {
     })
 
     async function onSubmit(values) {
+        setIsEditing(true); // Desabilita o botão
+
         try {
-            await onEditTarefa(values.name, values.price, values.date)
-            onEdit()
+            await onEditTarefa(values.name, values.price, values.date);
+            onEdit(); // Finaliza a edição
         } catch (error) {
             if (error.response && error.response.status === 409) {
                 form.setError('name', {
@@ -45,6 +48,8 @@ export function EdtForm({ tarefa, onEdit, onEditTarefa }) {
             } else {
                 console.error('Erro ao enviar os dados:', error);
             }
+        } finally {
+            setIsEditing(false); // Habilita o botão novamente
         }
     }
 
@@ -116,7 +121,13 @@ export function EdtForm({ tarefa, onEdit, onEditTarefa }) {
                     )}
                 />
                 <div className="flex gap-1">
-                    <Button type="submit" className="w-[65px] box-border px-4 py-2">Editar</Button>
+                    <Button
+                        type="submit"
+                        className="w-[65px] box-border px-4 py-2"
+                        disabled={isEditing}
+                    >
+                        {isEditing ? "Salvando" : "Editar"}
+                    </Button>
                     <Button type="button" variant="outline" onClick={onEdit} className="w-[65px] box-border px-4 py-2">Cancelar</Button>
                 </div>
             </form>
