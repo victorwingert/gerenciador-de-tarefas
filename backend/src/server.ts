@@ -212,25 +212,69 @@ app.delete('/tarefas/:id', async (req, res) => {
 });
 
 app.patch('/tarefas/:id', async (req, res) => {
-    const { ordem } = req.body as Tarefas;
+    const { nome, custo, data, ordem } = req.body as Tarefas;
     const { id } = req.params as id;
 
     try {
-        const { data, error } = await supabase
+        const { data: tarefaAtualData, error: tarefaAtualError } = await supabase
             .from('tarefas')
-            .update({ ordem })
+            .select('*')
             .eq('id', id)
             .single();
 
-        if (error) {
-            console.error(error);
-            return res.status(500).send({ message: 'Erro ao atualizar ordem da tarefa', error });
+        if (tarefaAtualError || !tarefaAtualData) {
+            return res.status(404).send({ message: 'Tarefa não encontrada' });
         }
 
-        return res.status(200).send({ message: 'Ordem da tarefa atualizada com sucesso!', data });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: 'Erro ao processar a solicitação', error });
+        const updatedFields: Partial<Tarefas> = {};
+
+        if (nome && tarefaAtualData.nome !== nome) {
+            const { data: checkData, error: checkError } = await supabase
+                .from('tarefas')
+                .select('id')
+                .eq('nome', nome)
+                .single();
+
+            if (checkError && checkError.code !== 'PGRST116') {
+                return res.status(500).send({ message: 'Erro ao verificar duplicidade', error: checkError });
+            }
+
+            if (checkData && checkData.id !== id) {
+                return res.status(409).send({ message: 'Já existe uma tarefa com esse nome.' });
+            }
+
+            updatedFields.nome = nome;
+        }
+
+        if (custo !== undefined && tarefaAtualData.custo !== custo) {
+            updatedFields.custo = custo;
+        }
+
+        if (data && tarefaAtualData.data !== data) {
+            updatedFields.data = data;
+        }
+
+        if (ordem !== undefined && tarefaAtualData.ordem !== ordem) {
+            updatedFields.ordem = ordem;
+        }
+
+        if (Object.keys(updatedFields).length === 0) {
+            return res.status(400).send({ message: 'Nenhuma alteração detectada.' });
+        }
+
+        const { data: updatedData, error: updateError } = await supabase
+            .from('tarefas')
+            .update(updatedFields)
+            .eq('id', id);
+
+        if (updateError) {
+            return res.status(500).send({ message: 'Erro ao atualizar tarefa', error: updateError });
+        }
+
+        return res.status(200).send({ message: 'Tarefa atualizada com sucesso!', data: updatedData });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send({ message: 'Erro interno do servidor', error: err });
     }
 });
 
