@@ -111,73 +111,6 @@ app.post("/tarefas", async (req, res) => {
     }
 });
 
-app.put('/tarefas/:id', async (req, res) => {
-    const { nome, custo, data } = req.body as Tarefas;
-    const { id } = req.params as id;
-
-    try {
-        const { data: tarefaAtualData, error: tarefaAtualError } = await supabase
-            .from('tarefas')
-            .select('nome, custo, data')
-            .eq('id', id)
-            .single();
-
-        if (tarefaAtualError) {
-            return res.status(404).send({ message: 'Tarefa não encontrada' });
-        }
-
-        let updateFields: string[] = [];
-        let params: any[] = [];
-
-        if (tarefaAtualData.nome !== nome) {
-            const { data: checkData, error: checkError } = await supabase
-                .from('tarefas')
-                .select('id')
-                .eq('nome', nome)
-                .single();
-
-            if (checkError && checkError.code !== 'PGRST116') {
-                return res.status(500).send({ message: 'Erro ao verificar tarefa existente', error: checkError });
-            }
-
-            if (checkData) {
-                return res.status(409).send({ message: 'Já existe uma tarefa com esse nome.' });
-            }
-
-            updateFields.push('nome = ?');
-            params.push(nome);
-        }
-
-        if (tarefaAtualData.custo !== custo) {
-            updateFields.push('custo = ?');
-            params.push(custo);
-        }
-
-        if (tarefaAtualData.data !== data) {
-            updateFields.push('data = ?');
-            params.push(data);
-        }
-
-        if (updateFields.length === 0) {
-            return res.status(400).send({ message: 'Nenhuma alteração detectada.' });
-        }
-
-        const { data: updatedData, error: updateError } = await supabase
-            .from('tarefas')
-            .update({ nome, custo, data })
-            .eq('id', id);
-
-        if (updateError) {
-            return res.status(500).send({ message: 'Erro ao atualizar tarefa', error: updateError });
-        }
-
-        return res.status(200).send({ message: 'Tarefa atualizada com sucesso!' });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send({ message: 'Erro interno do servidor' });
-    }
-});
-
 app.delete('/tarefas/:id', async (req, res) => {
     const { id } = req.params as id;
 
@@ -259,7 +192,7 @@ app.patch('/tarefas/:id', async (req, res) => {
         }
 
         if (Object.keys(updatedFields).length === 0) {
-            return res.status(400).send({ message: 'Nenhuma alteração detectada.' });
+            return res.status(200).send({ message: 'Nenhuma alteração detectada, mas operação concluída com sucesso!' });
         }
 
         const { data: updatedData, error: updateError } = await supabase
