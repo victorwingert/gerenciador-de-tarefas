@@ -116,13 +116,7 @@ export function EdtForm({ tarefa, onEdit, onEditTarefa }) {
                     )}
                 />
                 <div className="flex gap-1">
-                    <Button type="submit" className="w-[65px] box-border px-4 py-2" onClick={async () => {
-                        await api.put(`/tarefas/${tarefa.id}`, {
-                            nome: "YOJWAHFXPBCYGBQBNTBP",
-                            custo: tarefa.custo,
-                            data: tarefa.data ? format(new Date(tarefa.data), "dd/MM/yyyy") : null,
-                        })
-                    }}>Editar</Button>
+                    <Button type="submit" className="w-[65px] box-border px-4 py-2">Editar</Button>
                     <Button type="button" variant="outline" onClick={onEdit} className="w-[65px] box-border px-4 py-2">Cancelar</Button>
                 </div>
             </form>

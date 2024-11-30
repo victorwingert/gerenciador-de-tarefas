@@ -39,9 +39,6 @@ export function App() {
 
     if (!tarefaAnterior) return;
 
-    await api.patch(`/tarefas/${tarefa.id}`, { ordem: -1 });
-    await api.patch(`/tarefas/${tarefaAnterior.id}`, { ordem: -2 });
-
     const temp = tarefa.ordem;
     tarefa.ordem = tarefaAnterior.ordem;
     tarefaAnterior.ordem = temp;
@@ -56,9 +53,6 @@ export function App() {
     const tarefaSeguinte = tarefas.find((t) => t.ordem === tarefa.ordem + 1);
 
     if (!tarefaSeguinte) return;
-
-    await api.patch(`/tarefas/${tarefa.id}`, { ordem: -1 });
-    await api.patch(`/tarefas/${tarefaSeguinte.id}`, { ordem: -2 });
 
     const temp = tarefa.ordem;
     tarefa.ordem = tarefaSeguinte.ordem;
@@ -87,39 +81,36 @@ export function App() {
   }, [])
 
   const onDragEnd = async (result) => {
-    if (!result.destination) {
+    let origemI = result.source.index - 1;
+    let destinoI = result.destination.index - 1;
+
+    if (origemI === destinoI) {
       return;
     }
 
-    let sourceOrder = result.source.index;
-    let destinationOrder = result.destination.index;
+    const [removed] = tarefas.splice(origemI, 1);
 
-    const sourceTask = tarefas.find((tarefa) => tarefa.ordem === sourceOrder);
-    const destinationTask = tarefas.find((tarefa) => tarefa.ordem === destinationOrder);
+    tarefas.splice(destinoI, 0, removed);
 
-    if (sourceOrder === destinationOrder) {
-      return;
-    }
+    tarefas.forEach((tarefa, index) => {
+      tarefa.ordem = index + 1;
+    });
 
-    await api.patch(`/tarefas/${sourceTask.id}`, { ordem: -1 });
-    await api.patch(`/tarefas/${destinationTask.id}`, { ordem: -2 });
+    setTarefas(tarefas)
 
-    let temp = sourceOrder;
-    sourceOrder = destinationOrder;
-    destinationOrder = temp;
+    //const draggedTaskId = result.draggableId
 
-    const updatedTarefas = tarefas.map((tarefa) =>
-      tarefa.id === sourceTask.id ? { ...tarefa, ordem: sourceOrder } :
-        tarefa.id === destinationTask.id ? { ...tarefa, ordem: destinationOrder } :
-          tarefa
-    );
-    setTarefas(updatedTarefas);
+    //const ordemReal = destinoI+1
 
-    await api.patch(`/tarefas/${sourceTask.id}`, { ordem: sourceOrder });
-    await api.patch(`/tarefas/${destinationTask.id}`, { ordem: destinationOrder });
+    //console.log(draggedTaskId)
+    //console.log(ordemReal)
 
-    await getTarefas()
-  }
+    //await api.patch(`/tarefas/${draggedTaskId}`, { ordem:  ordemReal});
+
+    tarefas.forEach(async(tarefa, index) => {
+      await api.patch(`/tarefas/${tarefa.id}`, { ordem:  index+1});
+    })
+  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-4">
@@ -144,7 +135,7 @@ export function App() {
                   <div className="p-2" />
                   {tarefas
                     .sort((a, b) => a.ordem - b.ordem)
-                    .map((tarefa, index) => (
+                    .map((tarefa) => (
                       <React.Fragment key={tarefa.id}>
                         <Draggable draggableId={tarefa.id.toString()} index={tarefa.ordem}>
                           {(provided) => (
@@ -202,7 +193,7 @@ export function App() {
             <DialogDescription></DialogDescription>
           </VisuallyHidden>
           <EdtForm tarefa={tarefaAtual} onEdit={handleCloseDialog} onEditTarefa={async (name, price, date) => {
-            await api.put(`/tarefas/${tarefaAtual.id}`, {
+            await api.patch(`/tarefas/${tarefaAtual.id}`, {
               nome: name,
               custo: price,
               data: date.includes('T') ? format(new Date(date), "dd/MM/yyyy") : date,
