@@ -29,7 +29,8 @@ Este é um sistema web desenvolvido como parte de um processo seletivo da Fatto.
 - Exclui uma tarefa após confirmação do usuário (Sim/Não).  
 
 ### Reordenar Tarefas  
-- Implementado com botões para "subir" ou "descer" a posição de uma tarefa na ordem de apresentação.  
+- Implementado com botões para "subir" ou "descer" a posição de uma tarefa na ordem de apresentação.
+- Também existe a opção de mover os itens no estilo "drag and drop".
 
 ## Tecnologias Utilizadas  
 - **Frontend**: React, Shadcn/ui, Vite
